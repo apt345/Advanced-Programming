@@ -1,0 +1,1333 @@
+---
+title: "Python exam"
+author: "Pere"
+date: "21/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+getwd()
+```
+
+# Pandas
+
+## Features
+
+Allows for different columns with different types
+
+Two data structures:
+
+-   Series: (index and values)
+
+-   Dataframes: (index, column names and values)
+
+```{python}
+
+import numpy as np
+import pandas as pd
+
+# Define indexes (can be useful for time series analysis but is not relevant for this course)
+series = pd.Series(np.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
+
+# Different class
+type(series)
+
+series.values
+series.index
+
+data = pd.read_pickle('wind_pickle.pickle')
+
+# Dimensions 
+data.shape
+# The lables of the columns are the column names
+
+# Variable names 
+list(data.columns)
+
+View(data.head(25))
+
+View(data.describe()) 
+data.info()
+
+data.index
+
+
+# You can set one of the columns as the index
+
+data = data.set_index("year")
+
+data.index = pd.arrange(0r, data.shape[0])
+
+
+```
+
+## Extracting values from Pandas dataframe or series to numpy matrix/array
+
+```{python}
+
+data.values
+data.month.values
+
+data.loc[2:4] # Notice 4 is not excluded 
+
+# List of colummns 
+data.loc[:, ["month", "day", "hour"]] # Look at how square brackets are utilised 
+data.loc[2:4, ["month", "day", "hour"]] # Look at how square brackets are utilised, loc is recomended
+data.iloc[2:5, data.columns.get_indexer(["month", "day", "hour"])]
+
+
+# Range of columns 
+data.loc[:, "month": "hour"] # Look at how square brackets are utilised 
+
+# Returns a DF 
+data.loc[:,['month']]
+data[['month']]
+
+# Returns a series
+data.loc[:,'month']
+data.iloc[:, 3] # when calling rows,  the las element with as 1:4 is exlcuded 
+data['month']
+
+"AS you can see to keep the DF format you need to use [] within [], so [[]]"
+
+# Doubt: Can you be helped with names like with $ in R?
+
+a = data.energy
+type(a)
+
+```
+
+## Data Queries and processing
+
+# Where
+
+Conditions
+
+\>,\<, !=, etc.
+
+&, \|, \~, isin (the value is whithin a list of values), isnull
+
+```{python}
+
+where = (data.month == 1) & (data.day == 1)
+data.loc[where]
+data.query("month == 1 & day == 1")
+
+```
+
+### Creating new columns
+
+```{python}
+
+data['Chechu'] = data['p54.162.5'] / data['p54.162.1']
+
+data_copy = data.copy()
+
+data_copy.iloc[0:4,
+
+data.columns.get_indexer(['year', 'month', 'day'])] = np.nan
+
+
+### Continuous to categorical 
+
+data.loc[data.energy <= 3, 'pere'] = 'good'
+
+data.pere
+
+
+data.loc[:, ['pere', 'energy']].head(20)
+
+data.energy.hist() # Not being able to print this... 
+
+
+```
+
+### Modifying subsets of the dataframe
+
+```{python}
+
+import numpy as np
+
+data_copy.iloc[0:4, data.columns.get_indexer(['year', 'month', 'day'])]
+
+data_copy.iloc[0:4, data.columns.get_indexer(['year', 'month', 'day'])] = np.nan
+
+data_copy
+
+```
+
+# Numpy
+
+Over pandas, needed for sklearn applications
+
+All elements in a NumpY array must belong to the same type
+
+Against lists, offers the possibility of applying mathematical operations across objects: +,\*,etc
+
+b = a does not copy a's content into b. Rather, it creates a reference/view - like with lists, dictionaries and Python datatypes
+
+## Creating numpy objects and dtypes
+
+```{python}
+
+
+# Vectors 
+a = np.array([1,3,5,7,9, 5], dtype = np.float32) # dtype not needed
+d = np.arange(5, dtype=numpy.float) 
+c = a + a
+print c
+type(c)
+c.shape
+np.sctypes
+
+# To distinguix arrays from copies 
+a.flags.owndata
+
+# Numpy arrays with functions
+d = np.arange(5) 
+d = np.arange(3, 7, 0.5)
+np.linspace(3, 7, 1)
+np.zeros(5) # Vector of zeros
+np.random.rand(5,5) # Random numbers 
+np.random.randn(5) # From the standard normal distribution 
+randint(low, high, size=(a,b)) # Random integers
+d
+d.dtype
+
+# Matrices 
+A = np.array([[1, 2, 3], [3, 6, 9], [2, 4, 6]]) 
+a = np.arange(10)
+A = a.reshape((2,5))
+type(A)
+A
+A.shape
+
+np.diag([1,2,3])# Diagonal matrix 
+np.eye(3)# Indentity
+np.random.randn(5,5) # Random Matrix From the standard normal distribution 
+
+
+# 3 Dimensional arrays 
+
+
+
+
+
+
+```
+
+## Indexing
+
+Indexing is accessing element within a vector or matrix. We do this using slices/ranges or conditions (Boolean Indexing)
+
+```{python}
+
+A = np.array([[1, 2, 3], [3, 6, 9], [2, 4, 6]]) 
+A[:,:]
+A[2,1:]
+A[0] # First row and all columns
+A[0,0]
+
+
+```
+
+## Setting
+
+Setting: modifying elements within a vector or matrix (usually, first we index the elements to be modified, then they are modified)
+
+```{python}
+
+
+A[0, :] = [1, 1, 1] 
+A[:] = 0
+A
+
+# Embedding Nas
+a = np.array([[0, np.nan], [np.nan, 3], [4, np.nan]])
+
+
+np.isnan(a)
+# NAs into 0 
+a[np.isnan(a)] = 0
+a == 0
+
+# Remember you need to create a copy or you're fucked, because even if b is created from a subset of a, this subset of A will also be modified. 
+
+# To distinguix arrays from copies 
+a.flags.owndata
+b = a[2:4]
+b.flags.owndata
+b = a[2:4].copy() # Saved
+b.flags.owndata
+```
+
+## Numpy operations and functions
+
+<https://numpy.org/doc/stable/reference/ufuncs.html#available-ufuncs>
+
+```{python}
+
+
+np.sum(A, axis=0)
+
+np.sum(A, axis=1)
+
+np.max(A, axis=1)
+
+
+
+```
+
+### Broadcasting
+
+Broadcasting is just operations between arrays with different sizes
+
+```{python}
+
+# vector v scalar
+
+a = np.array([0, 1, 2, 3, 4, 5])
+
+b = np.array([10])
+
+c = a + b
+
+c
+
+
+# vector v scalar
+
+a = np.array([[0, 1], [2, 3], [4, 5]])
+b = np.array([[10], [20], [30]])
+c = a + b
+a
+c
+
+# Practical cases: 
+
+
+# - Normalisation (Careful when mistaking normlisation and standardisation)
+maxima = A.max(axis=0)
+minima = A.min(axis=0)
+normalized_matrix = (A - minima) / (maxima-minima)
+normalized_matrix
+
+# Standadisation 
+
+standarized_matrix = (A - A.mean(axis=0))/(A.std(axis=0))
+standarized_matrix
+
+```
+
+### 
+
+## Importing and saving numpy arrays into files
+
+```{python}
+
+# READING FILES 
+# Comfort
+np.genfromtxt("PERE.txt", skip_header=TRUE)
+
+# Spedd
+
+# WRITING TO TEXT FILES 
+np.savetxt(filename, data)
+
+# FOR pickle (binary format, faster)
+np.save(filename, data)
+my_array = np.load(filename, data)
+
+
+
+
+```
+
+### Exercise
+
+1.  Look inside the file
+2.  Read the file in numpy using the command np.gentromft() and put it into a numpy 2Darray (have a look at the manual for the correct options)
+3.  Create a function to extract the number of Males and Females in the dataset
+4.  Compute the overall mean for Age, HeartRate and Temperature
+5.  Compute the mean, max and ming of Age, HeartRate and Temeprature for males and femals apart and wirte the results on the file BD\_resultst.txt in a table format
+
+```{python}
+
+
+data = np.genfromtxt("BodyTemperature.txt", skip_header=True )
+
+np.any(np.isnan(data))
+
+# N males 
+np.sum(data[:,0] == 0)
+
+# N females 
+np.sum(data[:,0] == 1)
+
+# Total statistics 
+
+data.mean(axis=0)[1:]
+males = data[data[:,0] == 0]
+females = data[data[:,0] == 1]
+males_mean = males.mean(axis=0)[1:]
+males_max = males.max(axis=0)[1:]
+males_min = males.min(axis=0)[1:]
+females_mean = females.mean(axis=0)[1:]
+females_max = females.max(axis=0)[1:]
+females_min = females.min(axis=0)[1:]
+table = np.array([males_mean, males_max, males_min, females_mean, females_max, females_min])
+
+np.savetxt("BD_results.txt", table)
+
+```
+
+## Concatenating/tacking (Joining) Matrices
+
+```{python}
+
+# Concatenating: FOR MATRICES
+a1 = np.array([[0, 1, 2],
+[3, 4, 5],
+[6, 7, 8]])
+
+a2 = np.array([[10, 11, 12],
+[13, 14, 15],
+[16, 17, 18]])
+
+# rbind()
+b = np.concatenate((a1,a2))
+b
+
+# cbind()
+c = np.concatenate((a1,a2), axis=1)
+c
+
+
+# Stacking: Merging vectors 
+v1 = np.arange(0,4)
+v2 = np.arange(5,9)
+v1
+v2
+# Vertical stacking of vectors
+vv = np.vstack((v1,v2))
+vv
+# Horizontal stacking of vectors
+ww = np.vstack((v1, v2)).T
+ww
+
+```
+
+# Introduction to ML with Skicit-Learn
+
+Also, Pytorch and Tensorflow
+
+<https://scikit-learn.org/stable/>
+
+<https://github.com/tim-hub/machine-learning-books/blob/master/Introduction%20to%20Machine%20Learning%20with%20Python%20-%20A%20Guide%20for%20Data%20Scientists%202016.pdf>
+
+### Data Preprocessing
+
+Pandas / NumPy
+
+Feature selection
+
+Skicit-learn takes NumPy arrays as imputs
+
+NumPy matrices do not have names, and that's a problem, names, need to be inputed afterwards. So in any case, from Pandas you need to go to NumPy
+
+Categories either need to be transformed to numbers or dummified, but strings are not possible
+
+### Trainning
+
+In both, hold-out and cross-validation the measure of the performance is pessimistic the model is actually built on more sample size. However it's the best we can get.
+
+Competition mindset: test set can't be utilised. (Validation)
+
+The final model is built with the whole dataset.
+
+Procedure:
+
+-   The search space (the hyper-parameters of the method and their allowed values)
+
+-   The search method: so far, grid-search or random-search, but there are more (such as model based optimization), or none.
+
+-   The evaluation method: basically, validation set (holdout) or crossvalidation
+
+-   The performance measure (or score function): missclassification error, balanced accuracy, RMSE, ...
+
+**Hold-out (Performance measure) :**
+
+Specially with a low testing set, his approach makes the estimation of the error more inaccurate compared to cross validation. This is because you might be testing the model on a particular group of data that's particularly unusual. He calls this bias, but I'd say is variance, because the estimation depends on a unbiased random selection of the data.
+
+```{python}
+
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0) 
+# random state is the seed for the random selection 
+
+from sklearn import metrics
+from sklearn import tree
+
+clf = tree.DecisionTreeClassifier()
+
+np.random.seed(0)
+
+clf.fit(X_train, y_train)
+
+y_test_pred = clf.predict(X_test)
+
+metrics.accuracy_score(y_test, y_test_pred)
+
+
+```
+
+**Cross-validation (Performance)**
+
+```{python}
+
+from sklearn.model_selection import cross_val_score, KFold
+# create a k-fold crossvalidation iterator of k=5 folds
+# shuffle = True randomly rearranges the dataframe
+# random_state = 0 is for making the folds reproducible
+
+cv = KFold(n_splits=5, shuffle=True, random_state=0) # shuffle to choose randomly and not the first 80% of the test dataset
+
+clf = tree.DecisionTreeClassifier()
+
+scores = cross_val_score(clf, X, y, scoring='accuracy', cv = cv) 
+
+from scipy.stats import sem
+
+print("Mean score: {0:.3f} (+/-{1:.3f})".format(scores.mean(), sem(scores)))
+Mean score: -0.953 (+/-0.020)
+
+```
+
+### Training - Hyperparameter Tuning
+
+All machine learning methods have hyperparameters that control their behaviour.
+
+KNN: number of neighbors
+
+DEC. TREES:
+
+-   max\_depth: how far can the tree go with regards to the number of steps from root to lowest leaves
+
+-   min\_samples\_split: from which allocation the node should become a leaf and top splitting. Minimum number of instances, which will control the length of the tree as well.
+
+**OPTION 0: USE THE DEFAULT**
+
+When you don't day anything. They often don't have the optimal values of the parameters
+
+```{python}
+
+clf = tree.DecisionTreeClassifier()
+
+
+```
+
+**OPTION 1: LEAVE THEM BY HAND WHEN THE METHOD IS DEFINED**
+
+```{python}
+
+clf = tree.DecisionTreeClassifier(max_depth = 4)
+
+
+```
+
+**OPTION 2: AUTOMATIC HYPER-PARAMETER TUNING**
+
+Hyper parameter tuning is trying to identify the best values for the hyperparameters of the models
+
+So we're trying to automatically obtain the optima values of the parameters
+
+In general, hyper-parameter tuning is a search in a parameter space for a particular machine learning method (or estimator). Therefore, it is necessary to define:
+
+-   The search space (the hyper-parameters of the method and their allowed values)
+
+-   The search method: so far, grid-search or random-search, but there are more (such as model based optimization)
+
+-   The evaluation method: basically, validation set (holdout) or crossvalidation. When coding, this is comnined with cross validation. So you say, grid:search crossvalidation
+
+-   The performance measure (or score function): missclassification error, balanced accuracy, RMSE, ...
+
+How to do it? Several options:
+
+### GRID SEARCH Try all possible values that you define. For example, with KNN I want to try with 2,3,4 and 5 neighbours. (ie checking all combinations)
+
+Here we have to define the set space of the hyperparameters, and we'll get a performance measure for each case. and we pick the best one. So It's like a for loop or nest of loops
+
+Disadvantage: time consuming
+
+```{python}
+
+# Definining the search space for Grid-search
+
+clf = tree.DecisionTreeClassifier(max_depth = 4)
+
+param_grid = {'max_depth': [2, 4, 6, 8, 10, 12, 14, 16], # or list(range(2,16,2))
+              'min_samples_split': [2, 4, 6, 8, 10, 12, 14, 16]} # or list(range(2,16,2))
+              
+
+```
+
+### FIXED TRAIN/VALIDATION GRID SEARCH
+
+Conceptually simpler than cross-v, but code is more complex.
+
+Within the testing, in order to determine what goes to validation and what goes to testing, what we do is to define a percentage of 0 (validation) and the rest as -1 (training). Then we randomise it and that's it.
+
+```{python}
+
+from sklearn.model_selection import PredefinedSplit
+import numpy as np
+
+# Defining a fixed train/validation grid-search
+# -1 means training, 0 means validation
+
+validation_indices = np.zeros(X_train.shape[0])
+validation_indices[:round(2/3*X_train.shape[0])] = -1
+np.random.seed(0) # This is for reproducibility
+validation_indices = np.random.permutation(validation_indices)
+tr_val_partition = PredefinedSplit(validation_indices)
+clf_grid = GridSearchCV(clf,
+param_grid,
+scoring='accuracy',
+cv=tr_val_partition,
+n_jobs=1, verbose=1)
+
+# Training the model with the grid-search
+np.random.seed(0) # This is for reproducibility
+clf_grid.fit(X_train, y_train)
+# Making predictions on the testing partition
+y_test_pred = clf_grid.predict(X_test)
+# And finally computing the test accuracy
+print(metrics.accuracy_score(y_test_pred, y_test))
+```
+
+### RANDOM SEARCH: Instead of training all possible combinations, it just tries a few of them (randomly)
+
+2.  Advantage: you're in control in the proportion/number of combinations
+
+    Advantage: It normally gives the same or very similar results compared to grid search, because in many cases there are many equivalent hyperparameter combinations. (teacher's recommendation for standard cases)
+
+    Budget: the number of combinations
+
+```{python}
+
+
+# Definining the search space for Grid-search
+
+clf = tree.DecisionTreeClassifier(max_depth = 4)
+
+param_grid = {'max_depth': [2, 4, 6, 8, 10, 12, 14, 16], # or list(range(2,16,2))
+              'min_samples_split': [2, 4, 6, 8, 10, 12, 14, 16]} # or list(range(2,16,2))
+
+
+# But also, the statistical distribution out of which values can be sampled (this is preferred):
+
+from scipy.stats import uniform, expon
+from scipy.stats import randint as sp_randint
+
+# Search space with integer uniform distribution 
+
+# It does not need to be uniform but can be any distribution (noral, pois, etc). If you don't know, uniform is the default. 
+
+param_grid = {'max_depth': sp.randint(2,16), # random values from 2 to 16 
+              'min_samples_split': sp.randint(2,16)} 
+
+# CASE WITH SUPPOT VECTOR MACHINES ON SLIDE 53 and minute 2h 10'
+
+# sp_randint is a discrete uniform distribution. uniform is a continuous uniform distribution.
+
+```
+
+EXAMPLE CASE CV-HYPER-P TUNNING
+
+```{python}
+
+
+from sklearn.datasets import load_iris
+from sklearn import tree
+from sklearn.model_selection import train_test_split,
+GridSearchCV
+from sklearn import metrics
+iris = load_iris
+
+X = iris.data
+y = iris.target
+
+# Defining the train/test partitions
+# random_state is for reproducibility
+X_train, X_test, y_train, y_test = train_test_split(X, y,
+test_size=0.25, random_state=0)
+
+# Defining the method
+clf = tree.DecisionTreeClassifier()
+
+# Defining the Search space
+param_grid = {'max_depth': range(2,16,2),
+'min_samples_split': range(2,34,2)}
+
+# Defining a 5-fold crossvalidation grid-search: this is only a definition, nothing is being done 
+
+clf_grid = GridSearchCV(clf,
+param_grid,
+scoring='accuracy',
+cv=5 , n_jobs=1, verbose=1) # jobs is for paralel, 1 job will be one processor.
+
+
+# Nothing has happened yet, things are going to happen when I use .fit - what
+
+# Training the model with the grid-search. In this same code, both the identification of the optimal parameter and the training of the model are taking place
+
+np.random.seed(0) # This is for reproducibility
+clf_grid.fit(X_train, y_train)
+
+# Making predictions on the testing partition
+y_test_pred = clf_grid.predict(X_test)
+
+# And finally computing the test accuracy
+print(metrics.accuracy_score(y_test_pred, y_test))
+
+
+```
+
+EXAMPLE CASE HOD-OUT-HYPER-P TUNNING - In this case what we have is the train set, the validation set and the testing set (Outer / Model evaluation).
+
+```{python}
+
+
+from sklearn.datasets import load_iris
+from sklearn import tree
+from sklearn.model_selection import train_test_split,
+GridSearchCV
+from sklearn import metrics
+iris = load_iris
+
+X = iris.data
+y = iris.target
+
+# Defining the train/test partitions
+# Defining the train/test partitions
+X_train, X_test, y_train, y_test = train_test_split(X, y,
+test_size=0.25, random_state=33)
+
+# Defining the method
+clf = tree.DecisionTreeClassifier()
+
+# Defining the Search space
+param_grid = {'max_depth': range(2,16,2),'min_samples_split': range(2,34,2)}
+
+from sklearn.model_selection import PredefinedSplit
+import numpy as np
+# Defining a fixed train/validation grid-search
+# -1 means training, 0 means validation
+validation_indices = np.zeros(X_train.shape[0])
+validation_indices[:round(2/3*X_train.shape[0])] = -1
+np.random.seed(0) # This is for reproducibility
+validation_indices = np.random.permutation(validation_indices)
+tr_val_partition = PredefinedSplit(validation_indices)
+clf_grid = GridSearchCV(clf,
+param_grid,
+scoring='accuracy',
+cv=tr_val_partition,
+n_jobs=1, verbose=1)
+# Training the model with the grid-search
+np.random.seed(0) # This is for reproducibility
+clf_grid.fit(X_train, y_train)
+# Making predictions on the testing partition
+y_test_pred = clf_grid.predict(X_test)
+# And finally computing the test accuracy
+print(metrics.accuracy_score(y_test_pred, y_test))
+```
+
+CROSS VALIDATION (Outer) AND CROSS VALIDATION (Inner)
+
+In this case, you're getting different hyperparameters for each fold in the outter cross-validation. Maybe not much different, but different. Different data, different hyperparameters.
+
+```{python}
+
+
+from sklearn.datasets import load_iris
+from sklearn import tree
+from sklearn.model_selection import train_test_split,
+GridSearchCV
+from sklearn import metrics
+iris = load_iris
+
+X = iris.data
+y = iris.target
+
+# Defining the train/test partitions
+# Defining the train/test partitions
+X_train, X_test, y_train, y_test = train_test_split(X, y,
+test_size=0.25, random_state=33)
+
+# Defining the method
+clf = tree.DecisionTreeClassifier()
+
+# Defining the Search space
+param_grid = {'max_depth': range(2,16,2),'min_samples_split': range(2,34,2)}
+
+from sklearn.model_selection import PredefinedSplit
+import numpy as np
+# Defining a fixed train/validation grid-search
+# -1 means training, 0 means validation
+validation_indices = np.zeros(X_train.shape[0])
+validation_indices[:round(2/3*X_train.shape[0])] = -1
+np.random.seed(0) # This is for reproducibility
+validation_indices = np.random.permutation(validation_indices)
+tr_val_partition = PredefinedSplit(validation_indices)
+clf_grid = GridSearchCV(clf,
+param_grid,
+scoring='accuracy',
+cv=tr_val_partition,
+n_jobs=1, verbose=1)
+# Training the model with the grid-search
+np.random.seed(0) # This is for reproducibility
+clf_grid.fit(X_train, y_train)
+# Making predictions on the testing partition
+y_test_pred = clf_grid.predict(X_test)
+# And finally computing the test accuracy
+print(metrics.accuracy_score(y_test_pred, y_test))
+```
+
+### Validation
+
+### Decision tree application
+
+Decision Tree for regression complete
+
+Holdout
+
+```{python}
+
+from sklearn.datasets import load_boston
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn import neighbors
+boston = load_boston()
+#print(boston.DESCR)
+X = boston.data
+y = boston.target
+# Model evaluation with train/test
+clf = neighbors.KNeighborsRegressor()
+np.random.seed(0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,
+random_state=0)
+clf.fit(X_train, y_train)
+y_test_pred = clf.predict(X_test)
+print(metrics.mean_squared_error(y_test, y_test_pred))
+
+```
+
+Cross-Validation
+
+```{python}
+
+from sklearn.datasets import load_boston
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn import metrics
+from sklearn import tree
+# Model evaluation with 5-fold crossvalidation
+cv = KFold(n_splits=5, shuffle=True, random_state=0)
+boston = load_boston()
+#print(boston.DESCR)
+X = boston.data
+y = boston.target
+# Model evaluation with train/test
+clf = neighbors.KNeighborsRegressor()
+np.random.seed(0)
+scores = -
+cross_val_score(clf, X, y, scoring='neg_mean_squared_error', cv = cv
+)
+print(scores.mean())
+
+```
+
+### KNN application
+
+Don't forget that before doing KNN you need to normalise your data.
+
+Holdout
+
+```{python}
+
+from sklearn.datasets import load_boston
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn import tree
+boston = load_boston()
+#print(boston.DESCR)
+X = boston.data
+y = boston.target
+# Model evaluation with train/test
+clf = tree.DecisionTreeRegressor()
+np.random.seed(0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,
+random_state=0)
+clf.fit(X_train, y_train)
+y_test_pred = clf.predict(X_test)
+print(metrics.mean_squared_error(y_test, y_test_pred))
+
+```
+
+Cross-Validation
+
+```{python}
+
+from sklearn.datasets import load_boston
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn import metrics
+from sklearn import tree
+# Model evaluation with 5-fold crossvalidation
+cv = KFold(n_splits=5, shuffle=True, random_state=0)
+boston = load_boston()
+#print(boston.DESCR)
+X = boston.data
+y = boston.target
+# Model evaluation with train/test
+clf = tree.DecisionTreeRegressor()
+np.random.seed(0)
+scores = -
+cross_val_score(clf, X, y, scoring='neg_mean_squared_error', cv = cv
+)
+print(scores.mean())
+
+```
+
+### 
+
+## Data
+
+# Isolated Preprocessing
+
+Pipelines is the right way of doing preprocessing
+
+## 
+
+## Noise Removal (Noise removal - outliers?)
+
+### Wilson editing rule
+
+(To remove noise, wtf is noise)
+
+Use KNN, and when an observation is misclassified that instance is removed.
+
+## balance minority classes
+
+### SMOTE
+
+(To remove noise, wtf is noise)
+
+Use KNN, and when an observation is misclassified that instance is removed.
+
+## Standarisation / Normalisation
+
+Necessary for KNN, SVM, NNet.
+
+It is not correct to standardise first and the split the model. You do the standardisation in the train and test separately. The reason is because you're using information of the testing set for building the model and this is not acceptable.
+
+With hyper-parameter tuning, that is within the train, if we do hold out again should we wait to that point and do this on the train, validation and test separately?
+
+What do we do with cross-validation?
+
+### Scaling / Standardisation
+
+```{python}
+
+import sklearn.preprocessing
+
+X_train_minmax = min_max_scaler.fit_transform(X_train) # this line will have trainformed min_max_scaler (mix_max... is a variable and fit_... is a method, which tranform it). Now the minimum and maximum values of each of the attributes are stored in it. 
+
+X_test_minmax = min_max_scaler.transform(X_test) # I'll take the testing partition and it's going to normalise each of the attributes but with the minumum and mximum values computed before using the training partition. So the testing partition is not going to be used for anything, not even for normalisation because the min and max values required for normalisatiion were computed before with just the training partition 
+
+```
+
+### MinMaxScaler (Normalisation to 0-1)
+
+## NAs action, Imputation (for removal no need to say nothing)
+
+### Univariate
+
+## Categorical variables
+
+### Dummification
+
+### Integerisation
+
+### Target mean encoding
+
+It means replacing for the categorical variables each category by the porpotion of that category (this was not clearly explained and I'm not sure)
+
+### Response variable
+
+```{python}
+
+sklearn.preprocessing.LabelEncoder
+
+
+# Identify it 
+le = sklearn.preprocessing.LabelEncoder
+
+le.transform(["A", "A", "C"]) 
+# This will return:
+array([1,1,3])
+
+# Then, o get'em back you write 
+list(le.inverse_transform([2,2,1]))
+
+```
+
+## Attribute / Feature selection
+
+If you have many and many attributes, the model is not going to generalise well. So, we do feature selection
+
+He's way: Dependency (Linear and non-linear).
+
+### Identifying irrelevant variables
+
+-   Correlation: If high, good if not it's shit.
+
+    The problem is that this measures linear relationship.
+
+-   Correlation based: Chi-square, mutual information, linear correlation,
+
+```{python}
+
+sklearn.feature_selection.SelectKBest
+
+# There are many and go on the slectkbest I think, but he did not explain how it worked 
+
+# 
+
+
+```
+
+## Data Leakage
+
+# Pipelines
+
+The whole pipeline is a method, which goes from the partition to the creation of the model (eg the construction of the tree).
+
+-   The best way of doing preprocessing
+
+-   Opposite of doing by hand what has been done before
+
+-   Sequence of preprocessing steps, each step has an imput and give an output which is the input of the next step
+
+-   Is a sequence of estimators: Tranformations & Classifications/regression
+
+-   Solution to data leakage and possibility of tuning all the parameters
+
+TRANSFORMERS
+
+FIrst
+
+```{python}
+
+import numpy as np
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+boston = datasets.load_boston()
+X = boston.data
+y = boston.target
+
+
+# 1. Data Split 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=33)
+
+X_train[1, 1] = np.nan
+X_test[1, 1] = np.nan
+X_train
+X_test
+
+# transformation definition 
+trf = SimpleImputer(strategy='mean')
+trf.fit(X_train) 
+# Definition 
+trf.statistics_ # Construction 
+
+# 3. training transformation 
+X_train = trf.transform(X_train)
+
+# 4. testing transformation for when the model is already built 
+X_test = trf.transform(X_test)
+
+# BIULDING A PIPELINE OF TRANSFORMERS = traansformer itslef
+
+imputer = SimpleImputer(strategy='mean')
+selector = SelectKBest(f_regression, k=3) # Select the most important 3 
+trf = Pipeline(
+('impute', imputer),
+('select', selector)])
+
+
+# Access steps separately
+trf.fit(X_train, y_train)
+trf.named_steps['impute']
+trf.named_steps['select']
+
+
+# Getting the properties of each individual steps
+trf.named_steps['impute'].statistics_
+trf.named_steps['select'].get_support()
+
+
+# APPLYING THE TRANSFORMATION 
+
+# First NA are going to be iimputed and the features are going to be selected
+X_train = trf.transform(X_train)
+
+X_test = trf.transform(X_test) 
+
+
+# A CLASSIFIER/REGRESSOR PIPELINE = Classof/REGRESOR itself 
+
+imputer = SimpleImputer(strategy='mean')
+selector = SelectKBest(f_regression, k=3)
+knn = KNeighborsRegressor()
+
+clf = Pipeline([
+('impute', imputer),
+('select', selector),
+('knn_regression', knn)])
+clf.fit(X_train, y_train)
+
+y_test_pred = clf.predict(X_test)
+
+# Hyper-parameters of pipelines,  which are a classfier themselves 
+
+# Each step in the pipelin have hyperparameters
+
+# Feature selection has also hyperparameters like the nomber of important variables chosen (In the case of select k best
+
+# When parameters have the same name, this is specificed in the pipeline steps names, and then __ and the name of the hyperparameter
+
+imputer = SimpleImputer(strategy='mean')
+selector = SelectKBest(f_regression)
+knn = KNeighborsRegressor()
+
+# 1. defining the pipeline 
+
+clf = Pipeline([
+('impute', imputer),
+('select', selector),
+('knn_regression', knn)])
+
+
+# select__k = how many featuresto select
+# knn_regression__n_neighbors = how many neighbors
+
+# 2, Defining hyper-parameter space
+
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+'select__k': [2,3,4],
+'knn_regression__n_neighbors': [1,3,5]
+}
+
+# Defining a 5-fold crossvalidation grid-search
+
+clf_grid = GridSearchCV(clf, # clf is the whole pipelie, which is a method
+param_grid,
+scoring=‘neg_mean_squared_error’,
+cv=5 , n_jobs=1, verbose=1)
+clf_grid = clf_grid.fit(X_train, y_train) # Once grid search has happened what we have here is a model (in clf_grid), but just with the best hyperparameter that have been found with grid search 
+
+# The tuned method can be used for making predictions, just as any fit machine learning method
+
+y_test_pred = clf_grid.predict(X_test)
+
+# The best hyper-parameter values (and their scores) can be accessed
+
+clf_grid.best_params_
+
+clf_grid.best_score_
+
+clf_grid.best_estimator # We can even get the optimised pipeline itself (the actual pipeline after tuning.  It's the best one that has been evaluated)
+
+clf.get_params() # To see all the hyperparameters (Some of them he doesn't even know what they are, but you can appreacite some like the impute__strategy, select__k and knnn, all these  think you named them before)
+
+# IF YOU WANT TO SET SOME HYPERPARAMETERS BY HAND: 
+
+clf = clf.set_params(**{'knn_regression__n_neighbors':10})
+clf.get_params() # you have to use this sytexis with **{
+  
+}
+
+```
+
+### Catching steps in a pipeline
+
+Means memorising things that are going to be repeated several time but only have to be computed once.
+
+For hyper-parameter tuning, some of the transformers in the pipeline should be fitted just once.
+
+E.g., ordering the features should be done only once (In principle, the same ordering of features is going to be obtained everytime)
+
+When doing the tuning it does not make sense to compute the correlations (eg) in each case and do the ordering. SO CATCHING ALLOWS YOU TO DO THINGS THAT SHOULD BE DONE JUST ONCE, DOING THEM JUST ONCE. so the ordering of the attributes according by correlation is done just once, and that is stored somewhere and then when you have the attributes ordered by correlation then you try what happens when you select 2, then 3 ... but the ordering is not computed overtime,.
+
+RECOMENDATION: It takes time, so Only if the search space is very large or tuning is going to take a long it is worth to use a cash.
+
+```{python}
+
+# You can define a catch, which is somwhere where the information will be stored 
+
+from sklearn.model_selection import GridSearchCV
+from tempfile import mkdtemp
+from shutil import rmtree
+from joblib import Memory
+
+imputer = SimpleImputer(strategy='mean')
+selector = SelectKBest(f_regression)
+knn = KNeighborsRegressor()
+
+ # define a location for storing the catch 
+cachedir = mkdtemp() # define a catch dir (the where)
+memory = Memory(location=cachedir, verbose=10)
+memory = Memory(verbose=10)
+
+# Select is going to be cached
+clf = Pipeline([
+('impute', imputer),
+('select', selector),
+('knn_regression', knn)],
+memory = memory)
+
+```
+
+### Feature unions
+
+This is defining a step in the pipeline that combines features obtained from two different sources:
+
+For example:
+
+We can do PCA for some and Feature selection for others (It might be useful sometimes, sometimes not)
+
+```{python}
+
+iris = load_iris()
+X, y = iris.data, iris.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=33)
+
+# Now, we prepare the two sources of features/attributes: PCA and Feature Selection
+# We compute two features from each
+pca = PCA(n_components=2)
+selection = SelectKBest(k=2)
+
+# Build estimator from PCA and selection:
+combined_features = FeatureUnion([("pca", pca),
+("select", selection)])
+
+```
+
+Feature Unions can be used as a standalone transformer. We fit it with the training data and use it to transform both training and test.
+
+```{python}
+
+# ...
+# Build estimator from PCA and selection:
+combined_features = FeatureUnion([("pca", pca),
+("select", selection)]) # Put that inside a variable 
+
+combined_features.fit(X, y) # We can fit the whole thing
+
+# The we can use that combined features after it has been trained in order to do a tranformation, from the training part and testing partir, and we get new ones. 
+
+X_train_new = combined_features.transform(X_train)
+X_test_new = combined_features.transform(X_test)
+
+print("Combined space has", X_train_new.shape[1], "features") # prin n of features now
+
+```
+
+Feature Unions can also be used as a transformer step in a pipeline
+
+```{python}
+
+# ...
+# Build estimator from PCA and selection:
+combined_features = FeatureUnion([("pca", pca), ("select", selection)]) 
+knn = KNeighborsRegressor()
+
+# Construct the pipeline of pca&select + knn
+pca_sel_knn = Pipeline([("features", combined_features), ("knn", knn)])
+
+# Fit it
+pca_sel_knn.fit(X_train, y_train)
+
+# And use it for making predictions for the train and test datasets
+pred_train = pca_sel_knn.predict(X_train)
+pred_test = pca_sel_knn.predict(X_test)
+
+# we can still access each step in the pipeline 
+pca_sel_knn['features'].transformer_list[0]
+pca_sel_knn['features'].transformer_list[1]
+pca_sel_knn['knn']
+```
+
+### Column transformer (Transforming individual features)
+
+In many cases, different attributes should undergo differenet pre-processing steps. For instance, for categorical columns.
+
+We us ColumnTransformer
+
+This step can start from Pandas (all others had to start from NumPy)
+
+Steps: (slide 66)
+
+1.  We create the preprocessing pipelines for both numeric and categorical data, something that you define in new different sets
+2.  Put all together, we use ColumnTransformer for that () (slide 66)
+3.  Create the final pipeline
+
+When doing the parameter tuning you will need to refer to each group in the pipeline to address their hyperparemter processing optimisation. These hypercarameters can be access with the usual \_\_ notation.
+
+preprocessor\_\_num.name\_\_imputer\_\_strategy
+
+### Saving Pipelines
+
+A pipeline can take hours or even days to run, you might want to have it saved (SAving in Linux and loading in Windows and stuff like that can cause problems - might work well or not)
+
+```{python}
+
+from joblib import dump, load
+
+dump(pca_sel_knn, 'pca_sel_knn.joblib')
+
+pca_sel_knn = load('pca_sel_knn.joblib') 
+```
+
+### Out-of-sklearn transformers
+
+In order to apply pre-processing applications not included in sklearn, if the preprocessing is done with a Python function, that function can be used as a transformer
+
+We define an step with FunctionTranformer.
+
+```{python}
+
+from sklearn.preprocessing import FunctionTransformer
+
+knn = KNeighborsRegressor()
+
+remove_column_1 = FunctionTransformer(drop_first_column) 
+
+pipe = Pipeline([
+('drop_col_1', remove_column_1),
+('knn', knn)
+])
+
+```
+
+However, this might get more complex

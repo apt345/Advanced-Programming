@@ -1,0 +1,433 @@
+
+---
+title: "Untitled"
+author: "Pere"
+date: "22/12/2020"
+output: html_document
+---
+
+
+# Set-up 
+
+Maybe you have 
+
+```{python}
+import pandas as pd
+import numpy as np 
+
+my_NIA = 100441384 # NIA Pere Fuster 
+np.random.seed(my_NIA)
+
+data = pd.read_pickle('wind_pickle.pickle')
+data = data.drop(['month','steps','day','hour'], axis=1)
+
+grey = data.drop(['year','energy'], axis=1)
+grey = grey.sample(frac=0.10, axis='columns')
+
+data.shape
+grey.shape
+
+for col in grey.columns:
+    grey.loc[grey.sample(frac = 0.05).index, col] = pd.np.nan
+
+grey.isna().sum()/grey.shape[0] # checking, my nigga
+
+data[grey.columns] = grey
+
+data.isna().sum()/data.shape[0] # double-checking, my nigga
+
+data.year.min() # checking years ranges 
+data.year.max()
+
+train = data[(data['year'] < 2009)]
+training = data[(data['year'] < 2007)]
+validation = data[(data['year'] >= 2007) & (data['year'] < 2009)]
+holdout = data[(data['year'] >= 2009) & (data['year'] < 2010)]
+
+train = train.drop(['year'], axis=1)
+training = training.drop(['year'], axis=1)
+validation = validation.drop(['year'], axis=1)
+holdout = holdout.drop(['year'], axis=1)
+```
+
+## Part 1 
+
+The code belows includes all the steps related to data partition, which will be necessary to evaluate the models and to be able to improve their performance with parameter tuning. 
+
+```{python}
+X_train = train.drop(['energy'], axis=1)
+y_train = train.energy
+
+X_test = train.drop(['energy'], axis=1)
+y_test = train.energy
+
+
+from sklearn.model_selection import PredefinedSplit
+import numpy as np
+
+# Defining a fixed train/validation grid-search
+# -1 means training, 0 means validation
+
+validation_indices = np.zeros(X_train.shape[0])
+validation_indices[:round(2/3*X_train.shape[0])] = -1
+np.random.seed(0) # This is for reproducibility
+validation_indices = np.random.permutation(validation_indices)
+tr_val_partition = PredefinedSplit(validation_indices)
+```
+
+
+Since KNN and SVM need the same preprocessing, this is done at once
+# KNN (Part 1)
+
+```{python}
+from sklearn.model_selection import train_test_split # 
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline, FeatureUnion
+import sklearn
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.feature_selection import SelectKBest
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn import metrics
+
+### KNN and SVM PIPELINE 
+
+# Noise removal (If time)
+
+
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler()
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer()
+
+# Feature selection 
+selector = sklearn.feature_selection.SelectKBest()
+
+# Classificator 
+knn = KNeighborsRegressor()
+
+# Building the pipeline 
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+('select', selector),
+('knn_regression', knn)])
+
+reg.fit(X_train, y_train)
+y_test_pred = reg.predict(X_test)
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+With hyperparameter tuning 
+
+```{python}
+### KNN and SVM PIPELINE 
+
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler() # SVMs assume that the data it works with is in a standard range
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer()
+
+# Feature selection 
+selector = sklearn.feature_selection.SelectKBest() # Select the most important 3 
+# Classificator 
+knn = KNeighborsRegressor()
+
+# Building the pipeline 
+estimator.get_params().keys()
+
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+('select', selector),
+('knn_regression', knn)])
+
+# Defining hyper-parameter (serach) space
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import PredefinedSplit
+from sklearn.model_selection import RandomizedSearchCV
+
+param_grid = {
+'impute__strategy': ['mean', 'median'],
+'knn_regression__n_neighbors': range(1,12),
+'knn_regression__weights': ['uniform', 'distance']
+} 
+
+# Defining Search Method, evaluation method and performance measure
+reg_grid = RandomizedSearchCV(reg, param_grid, scoring='neg_mean_absolute_error', cv=tr_val_partition, n_jobs=1, verbose=1) 
+
+reg_grid = reg_grid.fit(X_train, y_train)
+
+# The tuned method can be used for making predictions, just as any fit machine learning method
+y_test_pred = reg_grid.predict(X_test)
+
+reg_grid.best_params_
+reg_grid.best_score_
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+
+# KNN (Part 2)
+
+Only Feature selection 
+
+```{python}
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler() # SVMs assume that the data it works with is in a standard range
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer(strategy='mean')
+
+# Feature selection 
+selector = sklearn.feature_selection.SelectKBest() # Select the most important 3 
+# Classificator 
+knn = KNeighborsRegressor()
+
+# Building the pipeline 
+
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+('select', selector),
+('knn_regression', knn)])
+
+# Defining hyper-parameter (serach) space
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import PredefinedSplit
+
+param_grid = {
+'select__k':  range(1,30),
+'knn_regression__n_neighbors': range(1,12),
+'knn_regression__weights': ['uniform', 'distance']
+} 
+
+# Defining Search Method, evaluation method and performance measure
+reg_grid = GridSearchCV(reg, param_grid, scoring='neg_mean_absolute_error', cv=tr_val_partition , n_jobs=1, verbose=1) 
+
+reg_grid = reg_grid.fit(X_train, y_train)
+
+# The tuned method can be used for making predictions, just as any fit machine learning method
+y_test_pred = reg_grid.predict(X_test)
+
+reg_grid.best_params_
+reg_grid.best_score_
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+Only PCA  
+
+```{python}
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler() # SVMs assume that the data it works with is in a standard range
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer(strategy='mean')
+
+# Classificator 
+knn = KNeighborsRegressor()
+
+# Attribute tranformation with PCA 
+from sklearn.decomposition import PCA
+pca = PCA()
+
+# Building the pipeline 
+
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+("features", pca), 
+('knn_regression', knn)])
+
+# Defining hyper-parameter (serach) space
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import PredefinedSplit
+
+param_grid = {
+'features__n_components':  range(1,6),
+'knn_regression__n_neighbors': range(1,12),
+'knn_regression__weights': ['uniform', 'distance']
+} 
+
+# Defining Search Method, evaluation method and performance measure
+reg_grid = GridSearchCV(reg, param_grid, scoring='neg_mean_absolute_error', cv=tr_val_partition , n_jobs=1, verbose=1) 
+
+reg_grid = reg_grid.fit(X_train, y_train)
+
+# The tuned method can be used for making predictions, just as any fit machine learning method
+y_test_pred = reg_grid.predict(X_test)
+
+reg_grid.best_params_
+reg_grid.best_score_
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+Both 
+
+```{python}
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler() # SVMs assume that the data it works with is in a standard range
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer(strategy='mean')
+
+# Feature selection 
+selector = sklearn.feature_selection.SelectKBest() # Select the most important 3 
+# Classificator 
+knn = KNeighborsRegressor()
+
+# Attribute tranformation with PCA 
+from sklearn.decomposition import PCA
+pca = PCA()
+
+# Feature Union 
+
+combined_features = FeatureUnion([("pca", pca),
+("select", selectior)])
+
+# Building the pipeline 
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+("features", combined_features), 
+('knn_regression', knn)])
+
+# Defining hyper-parameter (serach) space
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import PredefinedSplit
+
+param_grid = {
+'features__k':  range(1,30),
+'features__n_components':  range(1,6),
+'knn_regression__n_neighbors': range(1,12),
+'knn_regression__weights': ['uniform', 'distance']
+} 
+
+# Defining Search Method, evaluation method and performance measure
+reg_grid = GridSearchCV(reg, param_grid, scoring='neg_mean_absolute_error', cv=tr_val_partition , n_jobs=1, verbose=1) 
+
+reg_grid = reg_grid.fit(X_train, y_train)
+
+# The tuned method can be used for making predictions, just as any fit machine learning method
+y_test_pred = reg_grid.predict(X_test)
+
+reg_grid.best_params_
+reg_grid.best_score_
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+
+# SVM (Part 1)
+
+The goal of an SVM is to create a flat boundary, called hyperplane, which leads to fairly homogeneous partitions of data on either side.
+
+Therefore these are the hyperameters of these applications: 
+
+- C 
+- Kernel 
+- epsilon 
+
+Once the dimension have been increased to allow for a flat linear separation
+
+```{python}
+
+from sklearn.svm import SVR
+
+### KNN and SVM PIPELINE 
+
+# Noise removal (If time)
+
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler()
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer()
+
+# Feature selection 
+selector = sklearn.feature_selection.SelectKBest() # Select the most important 3 
+
+# Classificator 
+svm = SVR()
+
+# Building the pipeline 
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+('select', selector),
+('supportVM', svm)])
+
+reg.fit(X_train, y_train)
+y_test_pred = reg.predict(X_test)
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+```{python}
+# Standardisation 
+MinMax = sklearn.preprocessing.MinMaxScaler()
+
+# NAs Action 
+imputer = sklearn.impute.SimpleImputer()
+
+# Feature selection 
+selector = sklearn.feature_selection.SelectKBest() # Select the most important 3 
+
+# Classificator 
+svm = SVR()
+
+# Building the pipeline 
+reg = Pipeline([
+('minmax', MinMax), 
+('impute', imputer),
+('select', selector),
+('supportVM', svm)])
+
+param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100],
+'gamma': [0.001, 0.01, 0.1, 1, 10, 100]}
+
+param_grid = {
+'impute__strategy': ['mean', 'median'],
+'supportVM__C': list(np.linspace(0.1, 50, 500)),
+'supportVM__kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+'supportVM__epsilon': list(np.linspace(0.001, 1, 1000))
+} 
+
+# Defining Search Method, evaluation method and performance measure
+reg_grid = RandomizedSearchCV(reg, param_grid, scoring='neg_mean_absolute_error', cv=tr_val_partition, n_jobs=1, verbose=1) 
+reg_grid = reg_grid.fit(X_train, y_train)
+
+# The tuned method can be used for making predictions, just as any fit machine learning method
+y_test_pred = reg_grid.predict(X_test)
+
+reg_grid.best_params_
+reg_grid.best_score_
+
+print(metrics.mean_absolute_error(y_test, y_test_pred))
+```
+
+
+# Trees (Part 1
+
+
+# Extra work 
+
+## Random Forest and Adaboost
+
+## Ensemble 
+
+
+
+
+
+
+
+
+
+
+)
