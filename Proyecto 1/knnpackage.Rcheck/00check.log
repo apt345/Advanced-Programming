@@ -1,0 +1,102 @@
+* using log directory 'C:/Users/arpri/OneDrive/Escritorio/libros/master/Segundo Semicuatrimestre/ProgramacionAvanzada/Proyecto 1/knnpackage.Rcheck'
+* using R version 4.0.3 (2020-10-10)
+* using platform: x86_64-w64-mingw32 (64-bit)
+* using session charset: ISO8859-1
+* using options '--no-manual --as-cran'
+* checking for file 'knnpackage/DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'knnpackage' version '1.0'
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking serialization versions ... OK
+* checking whether package 'knnpackage' can be installed ... WARNING
+Found the following significant warnings:
+  my_3knn.cpp:66:24: warning: suggest parentheses around comparison in operand of '&' [-Wparentheses]
+  my_3knn.cpp:74:30: warning: suggest parentheses around comparison in operand of '&' [-Wparentheses]
+  my_3knn.cpp:25:17: warning: control reaches end of non-void function [-Wreturn-type]
+  my_3knn_invd.cpp:65:24: warning: suggest parentheses around comparison in operand of '&' [-Wparentheses]
+  my_3knn_invd.cpp:73:30: warning: suggest parentheses around comparison in operand of '&' [-Wparentheses]
+  my_3knn_invd.cpp:25:17: warning: control reaches end of non-void function [-Wreturn-type]
+See 'C:/Users/arpri/OneDrive/Escritorio/libros/master/Segundo Semicuatrimestre/ProgramacionAvanzada/Proyecto 1/knnpackage.Rcheck/00install.out' for details.
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* loading checks for arch 'i386'
+** checking whether the package can be loaded ... OK
+** checking whether the package can be loaded with stated dependencies ... OK
+** checking whether the package can be unloaded cleanly ... OK
+** checking whether the namespace can be loaded with stated dependencies ... OK
+** checking whether the namespace can be unloaded cleanly ... OK
+** checking loading without being on the library search path ... OK
+* loading checks for arch 'x64'
+** checking whether the package can be loaded ... OK
+** checking whether the package can be loaded with stated dependencies ... OK
+** checking whether the package can be unloaded cleanly ... OK
+** checking whether the namespace can be loaded with stated dependencies ... OK
+** checking whether the namespace can be unloaded cleanly ... OK
+** checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  'my_3knn' 'my_3knn_invd' 'my_knn_sourceCpp'
+All user-level objects in a package should have documentation entries.
+See chapter 'Writing R documentation files' in the 'Writing R
+Extensions' manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking pragmas in C/C++ headers and code ... OK
+* checking compilation flags used ... OK
+* checking compiled code ... NOTE
+Note: information on .o files for i386 is not available
+Warning in read_symbols_from_dll(so, rarch) :
+  this requires 'objdump.exe' to be on the PATH
+Warning in read_symbols_from_dll(so, rarch) :
+  this requires 'objdump.exe' to be on the PATH
+Warning in read_symbols_from_dll(so, rarch) :
+  this requires 'objdump.exe' to be on the PATH
+Note: information on .o files for x64 is not available
+Warning in read_symbols_from_dll(so, rarch) :
+  this requires 'objdump.exe' to be on the PATH
+Warning in read_symbols_from_dll(so, rarch) :
+  this requires 'objdump.exe' to be on the PATH
+Warning in read_symbols_from_dll(so, rarch) :
+  this requires 'objdump.exe' to be on the PATH
+File 'knnpackage/libs/i386/knnpackage.dll':
+  Found no calls to: 'R_registerRoutines', 'R_useDynamicSymbols'
+File 'knnpackage/libs/x64/knnpackage.dll':
+  Found no calls to: 'R_registerRoutines', 'R_useDynamicSymbols'
+
+It is good practice to register native routines and to disable symbol
+search.
+
+See 'Writing portable packages' in the 'Writing R Extensions' manual.
+* checking examples ...
+** running examples for arch 'i386' ... OK
+** running examples for arch 'x64' ... OK
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
+* DONE
+Status: 2 WARNINGs, 1 NOTE
